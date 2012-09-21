@@ -25,7 +25,7 @@ module.exports = function (templateDirectory, outputFile, watch) {
 
     
     output = [
-        '(function () {',
+        'define([], function () {',
         'var root = this, exports = {};',
         '',
         '// The jade runtime:',
@@ -47,11 +47,11 @@ module.exports = function (templateDirectory, outputFile, watch) {
         return arr.length;
     });
 
-    output += '\n// create our folder objects';
-    folders.forEach(function (folder) {
-        var arr = folder.split(path.sep);
-        output += '\nexports.' + arr.join('.') + ' = {};';
-    });
+    // output += '\n// create our folder objects';
+    // folders.forEach(function (folder) {
+    //     var arr = folder.split(path.sep);
+    //     output += '\nexports.' + arr.join('.') + ' = {};';
+    // });
     output += '\n';
 
     templates.forEach(function (file) {
@@ -69,21 +69,17 @@ module.exports = function (templateDirectory, outputFile, watch) {
         output += [
             '',
             '// ' + name + '.jade compiled template',
-            'exports.' + dirString + ' = ' + template + ';',
+            'exports["' + dirString.split('.').join('/') + '"] = ' + template + ';',
             ''
         ].join('\n');
     });
 
     output += [
         '\n',
-        '// attach to window or export with commonJS',
-        'if (typeof module !== "undefined") {',
-        '    module.exports = exports;',
-        '} else {',
-        '    root.templatizer = exports;',
-        '}',
+        '// returns the exported (compatible with requirejs)',
+        'return exports;',
         '',
-        '})();'
+        '});'
     ].join('\n');
 
     if (outputFile) fs.writeFileSync(outputFile, output);
